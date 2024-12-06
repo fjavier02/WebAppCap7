@@ -39,5 +39,11 @@ namespace WebAppCap7.Controllers
                 return View(model); // Muestra de nuevo el formulario con el mensaje de error
             }
         }
+
+        [HttpGet("login/auth")]
+        public IActionResult Auth()
+        {
+            return Content("login");
+        }
     }
 }

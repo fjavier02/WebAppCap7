@@ -6,17 +6,13 @@ namespace WebAppCap7.Helpers
 
     public static class EncryptionHelper
     {
+        private static readonly byte[] StaticSalt = Convert.FromBase64String("aGVsbG90aGlzYXBvd2VyZnVsYmFzZTY0c3RyaW5n"); // Ejemplo
+
         public static string HashPassword(string password)
         {
-            byte[] salt = new byte[128 / 8];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(salt);
-            }
-
             return Convert.ToBase64String(KeyDerivation.Pbkdf2(
                 password: password,
-                salt: salt,
+                salt: StaticSalt,
                 prf: KeyDerivationPrf.HMACSHA256,
                 iterationCount: 10000,
                 numBytesRequested: 256 / 8));
@@ -24,8 +20,8 @@ namespace WebAppCap7.Helpers
 
         public static bool VerifyPassword(string password, string storedHash)
         {
-            // Implementar lógica de verificación real en producción
-            return HashPassword(password) == storedHash;
+            string hash = HashPassword(password);
+            return hash == storedHash;
         }
     }
 
