@@ -1,6 +1,6 @@
 ﻿using Oracle.ManagedDataAccess.Client;
 
-namespace WebAppCap7.Tests // Cambia 'Tests' si colocaste en otra carpeta
+namespace WebAppCap7.Tests
 {
     public class OracleConnectionTest
     {

@@ -1,15 +1,21 @@
 ﻿using Oracle.ManagedDataAccess.Client;
 using WebAppCap7.Helpers;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace WebAppCap7.Services
 {
     public class UserService
     {
         private readonly OracleDbHelper _dbHelper;
+        private readonly IConfiguration _configuration;
 
-        public UserService(OracleDbHelper dbHelper)
+        public UserService(OracleDbHelper dbHelper, IConfiguration configuration)
         {
             _dbHelper = dbHelper;
+            _configuration = configuration;
         }
 
         public async Task<bool> ValidateUserAsync(string email, string password)
@@ -78,6 +84,33 @@ namespace WebAppCap7.Services
                     await command.ExecuteNonQueryAsync();
                 }
             }
+        }
+
+        private string GetSecretKey()
+        {
+            return _configuration["JwtSettings:SecretKey"];
+        }
+
+        public async Task<string> GenerateJwtTokenAsync(string email, string role)
+        {
+            var secretKey = Encoding.UTF8.GetBytes(GetSecretKey());
+            var signingKey = new SymmetricSecurityKey(secretKey);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Role, role)
+            }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return tokenHandler.WriteToken(token);
         }
     }
 }

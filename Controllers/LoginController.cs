@@ -2,48 +2,56 @@
 using WebAppCap7.Services;
 using WebAppCap7.ViewModels;
 
-namespace WebAppCap7.Controllers
+[Route("login")]
+public class APILoginController : Controller
 {
-    public class LoginController : Controller
+    private readonly UserService _userService;
+
+    public APILoginController(UserService userService)
     {
-        private readonly UserService _userService;
+        _userService = userService;
+    }
 
-        public LoginController(UserService userService)
+    [HttpGet("")]
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    [HttpPost("")]
+    public async Task<IActionResult> Index(LoginInputViewModel model)
+    {
+        if (!ModelState.IsValid)
         {
-            _userService = userService;
+            TempData["Message"] = "Dados inválidos. Por favor, tente novamente.";
+            return View(model);
         }
 
-        [HttpGet]
-        public IActionResult Index()
+        var userRole = await _userService.GetUserRoleAsync(model.Email, model.Password);
+        if (!string.IsNullOrEmpty(userRole))
         {
-            return View();
-        }
+            var token = await _userService.GenerateJwtTokenAsync(model.Email, userRole);
 
-        [HttpPost]
-        public async Task<IActionResult> Index(LoginInputViewModel model)
-        {
-            if (!ModelState.IsValid)
+            HttpContext.Response.Cookies.Append("BearerToken", token, new CookieOptions
             {
-                TempData["Message"] = "Datos inválidos. Por favor, intenta nuevamente.";
-                return View(model);
-            }
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddMinutes(60)
+            });
 
-            var isValidUser = await _userService.ValidateUserAsync(model.Email, model.Password);
-            if (isValidUser)
-            {
-                return RedirectToAction("Index", "Home"); // Redirige a la vista Home
-            }
-            else
-            {
-                TempData["Message"] = "Credenciales incorrectas. Por favor, intenta nuevamente.";
-                return View(model); // Muestra de nuevo el formulario con el mensaje de error
-            }
+            return RedirectToAction("Index", "Home");
         }
-
-        [HttpGet("login/auth")]
-        public IActionResult Auth()
+        else
         {
-            return Content("login");
+            TempData["Message"] = "Credenciais incorretas. Por favor, tente novamente.";
+            return View(model);
         }
+    }
+
+    [HttpGet("auth")]
+    public IActionResult Auth()
+    {
+        return Content("login");
     }
 }

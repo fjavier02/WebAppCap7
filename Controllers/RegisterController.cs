@@ -3,40 +3,38 @@ using WebAppCap7.Helpers;
 using WebAppCap7.Services;
 using WebAppCap7.ViewModels;
 
-namespace WebAppCap7.Controllers
+[Route("register")]
+public class APIRegisterController : Controller
 {
-    public class RegisterController : Controller
+    private readonly UserService _userService;
+
+    public APIRegisterController(UserService userService)
     {
-        private readonly UserService _userService;
+        _userService = userService;
+    }
 
-        public RegisterController(UserService userService)
+    [HttpGet("")]
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    [HttpPost("")]
+    public async Task<IActionResult> Index(RegisterInputViewModel model)
+    {
+        if (!ModelState.IsValid)
         {
-            _userService = userService;
+            TempData["Message"] = "Por favor preencha todos os campos corretamente.";
+            return View(model);
         }
 
-        [HttpGet]
-        public IActionResult Index()
-        {
-            return View();
-        }
+        // Encriptar la contraseña antes de guardar
+        var encryptedPassword = EncryptionHelper.HashPassword(model.Password);
 
-        [HttpPost]
-        public async Task<IActionResult> Index(RegisterInputViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                TempData["Message"] = "Por favor, complete todos los campos correctamente.";
-                return View(model);
-            }
+        // Guardar el usuario en la base de datos
+        await _userService.AddUserAsync(model.Email, encryptedPassword, model.Role);
 
-            // Encriptar la contraseña antes de guardar
-            var encryptedPassword = EncryptionHelper.HashPassword(model.Password);
-
-            // Guardar el usuario en la base de datos
-            await _userService.AddUserAsync(model.Email, encryptedPassword, model.Role);
-
-            TempData["Message"] = "Registro exitoso. Ahora puede iniciar sesión.";
-            return RedirectToAction("Index", "Login");
-        }
+        TempData["Message"] = "Registro bem-sucedido. Agora você pode fazer login.";
+        return RedirectToAction("Index", "Login");
     }
 }
