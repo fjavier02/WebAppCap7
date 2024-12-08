@@ -2,7 +2,7 @@
 using WebAppCap7.Services;
 using WebAppCap7.ViewModels;
 
-[Route("login")]
+[Route("Login")]
 public class LoginController : Controller
 {
     private readonly UserService _userService;
@@ -40,7 +40,7 @@ public class LoginController : Controller
                 Expires = DateTimeOffset.UtcNow.AddMinutes(60)
             });
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Qualidadear");
         }
         else
         {
