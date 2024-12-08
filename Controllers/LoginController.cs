@@ -3,11 +3,11 @@ using WebAppCap7.Services;
 using WebAppCap7.ViewModels;
 
 [Route("login")]
-public class APILoginController : Controller
+public class LoginController : Controller
 {
     private readonly UserService _userService;
 
-    public APILoginController(UserService userService)
+    public LoginController(UserService userService)
     {
         _userService = userService;
     }

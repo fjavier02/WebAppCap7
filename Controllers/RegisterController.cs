@@ -4,11 +4,11 @@ using WebAppCap7.Services;
 using WebAppCap7.ViewModels;
 
 [Route("register")]
-public class APIRegisterController : Controller
+public class RegisterController : Controller
 {
     private readonly UserService _userService;
 
-    public APIRegisterController(UserService userService)
+    public RegisterController(UserService userService)
     {
         _userService = userService;
     }
